@@ -16,6 +16,7 @@
     "nodemon": "^1.18.4"
   },
   "dependencies": {
+    "@glennsl/bs-json": "^5.0.2",
     "bs-express": "^1.0.1"
   }
 }
