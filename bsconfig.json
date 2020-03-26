@@ -10,7 +10,12 @@
     "in-source": true
   },
   "suffix": ".bs.js",
-  "bs-dependencies": ["@glennsl/bs-json", "bs-express"],
+  "bs-dependencies": [
+    "@glennsl/bs-json",
+    "bs-express",
+    "bs-abstract",
+    "relude"
+  ],
   "warnings": {
     "error": "+101"
   },

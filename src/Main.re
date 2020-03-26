@@ -1,10 +1,6 @@
 open Express;
-open Json;
-
-let app: Express.App.t = express();
-
-let p: int = 8080;
-
+// open Json;
+// open Belt;
 type myJson = {
   name: string,
   age: int,
@@ -42,8 +38,16 @@ let listener = (e: Js.null_undefined(Js.Exn.t)): unit => {
 let f0 = Middleware.from((_, _) => Response.sendString("hello browser"));
 let f1 = Middleware.from((_, _) => Response.sendJson(makeJson0()));
 
-f0 |> App.get(app, ~path="/e0");
-f1 |> App.get(app, ~path="/e1");
+let app: Express.App.t = App.make();
+
+let p: int = 8080;
+
+open Relude;
+let y = IO.suspend(() => App.get(app, ~path="/e0", f0));
+
+App.get(app, ~path="/e1", f1);
+
+app;
 
 // no IO monad...
 // here we have a side effect and we dont know it
