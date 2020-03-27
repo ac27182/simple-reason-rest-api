@@ -1,9 +1,20 @@
 open Express;
-// open Json;
-// open Belt;
 type myJson = {
   name: string,
   age: int,
+};
+
+type jobDetails0 = {
+  jobTitle: string,
+  country: string,
+  company: string,
+  remote: bool,
+  postingDate: int,
+  closingDate: int,
+  salaryLowerBound: int,
+  salaryUpperBound: int,
+  skills: list(string),
+  description: string,
 };
 
 // very clunky....
@@ -26,29 +37,66 @@ let makeJson0 = () => {
   obj;
 };
 
-let listener = (e: Js.null_undefined(Js.Exn.t)): unit => {
+// Js_array.from;
+
+let listToArray = (l: list(string)): array(string) =>
+  List.fold_left(
+    (acc: array(string), x: string): array(string) =>
+      [|x|] |> (acc |> Array.append),
+    Array.make(0, ""),
+    l,
+  );
+
+// generating job details
+let jobDetailsEncoder = (j: jobDetails0): Js.Json.t =>
+  Json.Encode.(
+    object_([
+      ("jobTitle", j.jobTitle |> string),
+      ("country", j.country |> string),
+      ("company", j.company |> string),
+      ("remote", j.remote |> bool),
+      ("postingDate", j.postingDate |> int),
+      ("closingDate", j.closingDate |> int),
+      ("salaryLowerBound", j.salaryLowerBound |> int),
+      ("salaryUpperBound", j.salaryUpperBound |> int),
+      ("skills", j.skills |> listToArray |> stringArray),
+      ("description", j.description |> string),
+    ])
+  );
+
+let listener = (e: Js.null_undefined(Js.Exn.t)): unit =>
   switch (e) {
   | exception (Js.Exn.Error(e)) =>
     Js.log(e);
     Node.Process.exit(1);
-  | _ => Js.log @@ "hello world"
+  | _ => Js.log @@ ">server operational"
   };
+
+let details: jobDetails0 = {
+  jobTitle: "software engineer",
+  country: "united kingdom",
+  company: "tianlong capital",
+  remote: true,
+  postingDate: Js.Date.now() |> int_of_float,
+  closingDate: Js.Date.now() |> int_of_float,
+  salaryLowerBound: 30000,
+  salaryUpperBound: 40000,
+  skills: ["scala", "javascript", "kafka", "spark", "react"],
+  description: "tianlong capital is hiring software engineers",
 };
 
 let f0 = Middleware.from((_, _) => Response.sendString("hello browser"));
-let f1 = Middleware.from((_, _) => Response.sendJson(makeJson0()));
+let f1 = Middleware.from((_, _) => Response.sendJson(() |> makeJson0));
+let f2 =
+  Middleware.from((_, _) =>
+    details |> jobDetailsEncoder |> Response.sendJson
+  );
 
 let app: Express.App.t = App.make();
-
 let p: int = 8080;
 
-open Relude;
-let y = IO.suspend(() => App.get(app, ~path="/e0", f0));
+App.get(app, ~path="/helloWorld", f0);
+App.get(app, ~path="/getJson", f1);
+App.get(app, ~path="/getJobDetails", f2);
 
-App.get(app, ~path="/e1", f1);
-
-app;
-
-// no IO monad...
-// here we have a side effect and we dont know it
-let server = App.listen(app, ~port=p, ~onListen=listener, ());
+App.listen(app, ~port=p, ~onListen=listener, ());
